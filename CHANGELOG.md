@@ -30,6 +30,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   underneath; user decision-gates preserved; direct specialist consult on request; delivery-manager
   and product-manager clarified to never message the user directly. A coordinator-led
   **user-perspective acceptance** pass runs before ship — user's final sign-off still required.
+- **Portable Playwright visual-check tool** (`skills/ui-ux-excellence/tools/visual-check.mjs`): renders a
+  URL across the 320→1920 breakpoint matrix, screenshots each, and flags horizontal overflow / broken
+  images / oversized elements / console errors to `report.json` (exit 1 if broken). Resolves Playwright
+  from the project; graceful install message if missing. Wired into ui-ux-excellence, ux-design-reviewer,
+  and `/ux-check`. Verified end-to-end (caught a planted overflow + broken image).
 - Totals: **22 agents, 44 skills, 20 commands.** Validation clean; hooks 25/25.
 
 ## [0.1.0] — Unreleased (Phase A complete)

@@ -80,8 +80,13 @@ inconsistent rendering of the same component across breakpoints or pages.
 - **Core Web Vitals (good @ p75):** LCP ≤2.5s, INP ≤200ms, CLS ≤0.1. (https://web.dev/articles/vitals)
 
 ## Review verification protocol (how to prove a page isn't broken)
-1. Render the page at each breakpoint in the matrix (320→1920) using available tooling: a Preview/Chrome
-   MCP, or a dev server + headless screenshots (e.g. `npx playwright`), or the project's run/preview skill.
+1. Render the page at each breakpoint in the matrix (320→1920). **Easiest: the bundled `visual-check`
+   tool** (portable Playwright — resolves Playwright from the project):
+   `node "${CLAUDE_PLUGIN_ROOT}/skills/ui-ux-excellence/tools/visual-check.mjs" --url <url>` — it
+   screenshots every breakpoint and reports horizontal overflow / broken images / oversized elements /
+   console errors to `report.json` (exit 1 if broken). First run needs
+   `npm i -D playwright && npx playwright install chromium`. Alternatives: a Preview/Chrome MCP, or the
+   project's run/preview skill.
 2. At each width, scan the §10 checklist; measure contrast (§2), spacing on the 8-pt grid (§4), and touch
    targets (§6).
 3. Exercise the four states (§8) and `prefers-reduced-motion`.

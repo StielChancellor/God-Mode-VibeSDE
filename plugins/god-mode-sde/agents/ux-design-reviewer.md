@@ -21,8 +21,13 @@ any frontend build/change. You may BLOCK closure of a UI feature.
 1. **Locate & render.** Identify the page/route/component and how to view it. Render at the full
    breakpoint matrix — **320, 375, 768, 1024, 1280, 1440, 1920** — using whatever is available, in
    this order of preference:
-   - a connected **Preview/Chrome MCP** (start/navigate, resize viewport, screenshot at each width);
-   - else a **dev server + headless screenshots** (`npx playwright` or the project's run/preview skill);
+   - **preferred — the bundled portable tool:** run
+     `node "${CLAUDE_PLUGIN_ROOT}/skills/ui-ux-excellence/tools/visual-check.mjs" --url <url>` from the
+     project; it screenshots every breakpoint and reports overflow / broken images / oversized elements /
+     console errors to `report.json` (exit 1 if broken). First run:
+     `npm i -D playwright && npx playwright install chromium`.
+   - else a connected **Preview/Chrome MCP** (start/navigate, resize viewport, screenshot at each width);
+   - else a **dev server + headless screenshots** (the project's run/preview skill);
    - else **static analysis** of the component/CSS for the failure patterns — and state clearly that
      live rendering wasn't available so coverage is reduced.
 2. **Run the checklist at each breakpoint** (from `ui-ux-excellence`):
