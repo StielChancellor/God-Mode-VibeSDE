@@ -1,6 +1,6 @@
 ---
 name: qa-gates
-description: Use to run the multi-lens QA model that gates every feature and the final ship. Trigger before closing any feature ("is this feature done", "QA this", "feature check") and before shipping ("ship check", "final QA", "ready to release"). Per feature, dispatch security-engineer + code-quality-reviewer + adversarial-tester + qa-engineer in PARALLEL — all must pass. Final gate adds a best-practices pass + UAT + smoke before ship.
+description: Use to run the multi-lens QA model that gates every feature and the final ship. Trigger before closing any feature ("is this feature done", "QA this", "feature check") and before shipping ("ship check", "final QA", "ready to release"). Per feature, dispatch security-engineer + code-quality-reviewer + adversarial-tester + qa-engineer (plus ux-design-reviewer for UI) in PARALLEL — all must pass. Final gate adds a best-practices pass + UAT + smoke before ship.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -14,8 +14,8 @@ Evidence-based only: a lens "passes" when it has actually run and verified, neve
 - **Stage 7** (`/feature-check`) — runs before closing EACH feature.
 - **Stage 8** (`/ship-check`) — final pass + UAT + smoke before shipping to end users.
 
-## Stage 7 — per-feature gate (4 lenses, IN PARALLEL)
-Before a feature is marked done, dispatch these four agents **in parallel**; all must pass:
+## Stage 7 — per-feature gate (4 lenses + a UX lens for UI, IN PARALLEL)
+Before a feature is marked done, dispatch these agents **in parallel**; all must pass:
 
 1. **`security-engineer`** — OWASP + cyber best practices: authz at boundaries, input validation/
    output encoding, secrets handling, dependency/SCA scan, no injection sinks. (See `secure-coding`.)
@@ -30,9 +30,13 @@ Before a feature is marked done, dispatch these four agents **in parallel**; all
    - Every call site of changed code updated; no half-wired feature.
    - No dead/orphaned code the change left behind.
    - Accessibility (WCAG 2.2 AA) + cross-browser/perf budgets for UI.
+5. **`ux-design-reviewer`** (UI features only) — renders the page across the breakpoint matrix and
+   gates it on `ui-ux-excellence`: not broken (no overflow/overlap/truncation/CLS/contrast fails),
+   visually consistent across screens and pages, and design-token-clean. On fail it hands a precise
+   fix list to the `frontend-engineer` and re-reviews. (See the `/ux-check` command.)
 
-◆ **Only when all four lenses confirm** does the feature close and the swarm move to the next task.
-A single failing lens blocks the feature.
+◆ **Only when all lenses confirm** (the UX lens included for any UI feature) does the feature close
+and the swarm move to the next task. A single failing lens blocks the feature.
 
 ## Stage 8 — final gate before ship
 1. A **fresh** set of QA agents runs a thorough **best-practices pass** and fixes findings (fresh

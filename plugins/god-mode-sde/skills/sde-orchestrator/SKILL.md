@@ -29,7 +29,7 @@ tradeoffs and assumptions.
 | 4 | Module map & interfaces | `/module-map` | solution-architect, module-architecture | ◆ user confirms decomposition |
 | 5 | Build plan (foundation-first) | `/build-plan` | writing-plans, build-roadmap | ◆ EXPLICIT go before coding |
 | 6 | Build (coding swarm) | `/build` | backend/frontend/data/devops agents, dispatching-parallel-agents, TDD | per-feature -> stage 7 |
-| 7 | Per-feature QA gate | `/feature-check` | security-engineer + code-quality-reviewer + adversarial-tester + qa-engineer (PARALLEL) | ◆ all pass -> next feature |
+| 7 | Per-feature QA gate | `/feature-check` | security-engineer + code-quality-reviewer + adversarial-tester + qa-engineer + ux-design-reviewer (UI) (PARALLEL) | ◆ all pass -> next feature |
 | 8 | Final QA, UAT & smoke | `/ship-check` | qa-engineer, security-engineer | ◆ confirm -> ship |
 | 9 | Change management | `/change-request` | product-manager, change-propagation | re-enter at PRD |
 
@@ -69,7 +69,8 @@ tradeoffs and assumptions.
 - Journey & UX flow -> `ux-journey-designer`
 - Implementation -> `backend-engineer`, `frontend-engineer`, `data-engineer`, `devops-sre`
 - AI/agent features -> `ai-agent-engineer`
-- QA lenses -> `security-engineer`, `code-quality-reviewer`, `adversarial-tester`, `qa-engineer`
+- QA lenses -> `security-engineer`, `code-quality-reviewer`, `adversarial-tester`, `qa-engineer`,
+  and `ux-design-reviewer` (UI/UX gate for any user-facing feature)
 
 ## When invoked
 1. Identify where in the pipeline the user is (new build -> stage 0; change -> stage 9).

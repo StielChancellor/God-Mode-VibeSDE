@@ -42,6 +42,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   OKRs/North Star/HEART/AARRR, outcome roadmaps, JTBD/usability/MVP, Cagan's 4 risks, empowered
   teams, accessibility). `god-mode-principles` gained a Team Operating Standards section; the
   product-manager / solution-architect / devops-sre agents bind the new skills.
+- UI/UX quality gate (web-sourced, cited): `ui-ux-excellence` skill (Nielsen heuristics, Gestalt,
+  Laws of UX, 60-30-10 + WCAG contrast, type scale/measure, 8-pt grid, design tokens, responsive
+  matrix + touch targets, four states + RAIL, motion/reduced-motion, broken-UI checklist + Core Web
+  Vitals + visual-regression) + the `ux-design-reviewer` agent that renders a page across the
+  breakpoint matrix, gates it for broken/inconsistent UI, and dispatches fixes to frontend-engineer
+  + the `/ux-check` command. Wired as the Stage-7 UX lens (qa-gates + orchestrator); frontend-engineer
+  now binds `ui-ux-excellence`.
 
 ### Deferred
 - End-to-end dogfood of a full sample platform build.
