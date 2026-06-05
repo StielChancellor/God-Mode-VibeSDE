@@ -1,0 +1,24 @@
+# Attribution & Third-Party Notices
+
+God-Mode SDE incorporates ideas and adapted content from the following open-source
+projects. Each was security-scanned before ingestion (see `ingest/reports/`). All are
+MIT-licensed; their copyright/permission notices are preserved here.
+
+## superpowers — https://github.com/obra/superpowers
+Copyright (c) Jesse Vincent (@obra). MIT License.
+Methodology skills (TDD, systematic debugging, planning, code review, parallel-agent
+dispatch, git worktrees, verification-before-completion) are adapted into this plugin's
+`skills/` with modifications for the God-Mode SDE pipeline.
+
+## graphify — https://github.com/safishamsi/graphify
+Copyright (c) Safi Shamsi. MIT License.
+Integrated as an optional external tool via the `codebase-knowledge-graph` skill (detect /
+auto-install / fallback). The graphify package itself is NOT bundled; users install it.
+
+## andrej-karpathy-skills — https://github.com/multica-ai/andrej-karpathy-skills
+Behavioral coding guidelines (CLAUDE.md) incorporated into
+`skills/_shared/god-mode-principles.md`.
+
+---
+If you are a maintainer of any of the above and want attribution adjusted, please open an
+issue on this repository.

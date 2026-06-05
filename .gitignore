@@ -1,0 +1,10 @@
+# Ingest scratch — cloned third-party repos, never committed
+ingest/_scratch/
+
+# Node / tooling
+node_modules/
+*.log
+.DS_Store
+
+# Local journey-canvas runtime state (generated)
+**/.journey-canvas-state.json

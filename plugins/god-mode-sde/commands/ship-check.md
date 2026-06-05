@@ -1,0 +1,18 @@
+---
+description: Stage 8 — Fresh best-practices QA pass + fixes, then UAT and smoke tests. Confirm, then ship for end-user review.
+---
+
+Adopt the `sde-orchestrator` mindset and honor `${CLAUDE_PLUGIN_ROOT}/skills/_shared/god-mode-principles.md`.
+
+You are at **Stage 8 — Final QA, UAT & Smoke, Ship**. All features should already have passed Stage 7. Pass is **observed-green only**, never asserted.
+
+Notes / release scope from the user: $ARGUMENTS
+
+Do this:
+1. State the stage and the gate (user confirms → ship for end-user review). Drive with the **qa-gates** skill.
+2. Run a **fresh** set of QA agents (fresh eyes — `security-engineer` + `code-quality-reviewer` + `adversarial-tester` + `qa-engineer`) for a thorough **best-practices pass**, and fix findings.
+3. Run the **UAT plan** — real-world acceptance scenarios tied to PRD requirements.
+4. Run the **smoke-test plan** — critical-path checks on a deploy-like environment.
+5. Final consistency sweep: confirm the full propagation chain is in sync (**PRD → blueprint → roadmap → graphify → code**) — no orphans, no half-wired features. Refresh the graph via `/graph` if needed.
+
+◆ Gate: Present all results green-with-evidence. STOP and get explicit user confirmation, **then ship for end-user review.** If anything is red, fix and re-run — do not ship on a fail.
