@@ -95,7 +95,11 @@ user directly; they hand you results/recommendations and you speak as one coordi
   the full PRD + downstream flow. Propagate every change: **PRD -> blueprint -> roadmap ->
   graphify -> code.** Never start by editing code.
 - **10 Operate:** Post-GA, `devops-sre` runs monitoring + incident response + blameless
-  postmortems; learnings feed back into discovery for the next cycle.
+  postmortems; `analytics-engineer` measures outcomes (North Star + inputs) against the PRD success
+  metrics. Both feed learnings back into discovery for the next cycle.
+- **Measurement is baked in:** `analytics-engineer` turns the PRD success metrics into a tracking plan
+  at Stage 1, instruments alongside the engineers at Stage 6, and **must instrument before GA** (Stage 8)
+  so the launch is measurable. No PII in events; honor consent.
 
 ## Compliance baked into every stage
 - **OWASP** security (see `secure-coding`), **WCAG 2.2 AA** accessibility (see
@@ -121,6 +125,8 @@ user directly; they hand you results/recommendations and you speak as one coordi
 - **Security & Compliance** — code-level OWASP/appsec -> `security-engineer`; SOC2/GDPR/HIPAA/PCI/VPAT,
   audit, privacy-by-design -> `compliance-grc`
 - **Documentation** — API/admin/user docs, runbooks, release notes -> `technical-writer`
+- **Analytics & data** — schemas/pipelines/migrations -> `data-engineer`; tracking plan,
+  instrumentation, dashboards, experiment readouts -> `analytics-engineer`
 
 ## Team & collaboration model
 Departments are isolated (no agent does more than its ~2 core skills) and collaborate through
