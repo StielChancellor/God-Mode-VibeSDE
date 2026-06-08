@@ -26,6 +26,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   proactively recommends installing graphify (free/OSS) for real cross-module impact analysis, with the
   install-now (`/graph`) or proceed-with-fallback choice — surfaced before the first build/change so
   change-propagation runs on facts, not memory. (tech-lead agent + build-roadmap skill + /build-plan.)
+- **Tidy + integrity:** the validator now also enforces **agent↔skill existence**, the **≤2-skills
+  cap**, and that every **`${CLAUDE_PLUGIN_ROOT}` file reference resolves** (60 checked, 0 dangling) —
+  so stale bindings/refs can't slip in (and CI catches them). Removed the stale one-shot
+  `ingest/fix-frontmatter.mjs`; reclaimed the gitignored scratch (172 MB → 126 KB).
 - Totals: **26 agents, 50 skills, 23 commands.** Validation clean; hooks 42/42. Bump to 0.4.0.
 
 ## [0.3.0] — Unreleased (design refinement — kill the "AI-slop" look)

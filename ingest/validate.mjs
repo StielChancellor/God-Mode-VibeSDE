@@ -1,5 +1,6 @@
 // Self-validation for the god-mode-sde plugin. Run: node ingest/validate.mjs
-// Checks: manifests parse; every SKILL.md/agent/command has required frontmatter.
+// Checks: manifests parse; every SKILL.md/agent/command has required frontmatter;
+// every agent binds <=2 skills that EXIST; every ${CLAUDE_PLUGIN_ROOT}/<file> ref resolves.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +31,7 @@ for (const f of ['.claude-plugin/marketplace.json', 'plugins/god-mode-sde/.claud
 
 console.log('Skills:');
 const skillsDir = join(PLUGIN, 'skills');
-let skillCount = 0;
+const skillNames = new Set();
 for (const name of readdirSync(skillsDir)) {
   const dir = join(skillsDir, name);
   if (!statSync(dir).isDirectory() || name === '_shared') continue;
@@ -40,23 +41,58 @@ for (const name of readdirSync(skillsDir)) {
   if (!fm) { err(`skill ${name}: no frontmatter`); continue; }
   if (!fm.description) err(`skill ${name}: missing description`);
   if (fm.description && fm.description.length < 30) warn(`skill ${name}: thin description`);
-  skillCount++;
+  skillNames.add(name);
 }
-console.log(`  -> ${skillCount} skills`);
+console.log(`  -> ${skillNames.size} skills`);
 
-for (const [kind, req] of [['agents', ['description', 'model']], ['commands', ['description']]]) {
-  console.log(kind[0].toUpperCase() + kind.slice(1) + ':');
-  const d = join(PLUGIN, kind);
-  let n = 0;
-  if (existsSync(d)) for (const f of readdirSync(d)) {
-    if (!f.endsWith('.md')) continue;
-    const fm = frontmatter(join(d, f));
-    if (!fm) { err(`${kind}/${f}: no frontmatter`); continue; }
-    for (const r of req) if (!fm[r]) err(`${kind}/${f}: missing ${r}`);
-    n++;
-  }
-  console.log(`  -> ${n} ${kind}`);
+console.log('Agents:');
+const agentsDir = join(PLUGIN, 'agents');
+let agentCount = 0;
+if (existsSync(agentsDir)) for (const f of readdirSync(agentsDir)) {
+  if (!f.endsWith('.md')) continue;
+  const fm = frontmatter(join(agentsDir, f));
+  if (!fm) { err(`agents/${f}: no frontmatter`); continue; }
+  for (const r of ['description', 'model']) if (!fm[r]) err(`agents/${f}: missing ${r}`);
+  const bound = (fm.skills || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (bound.length > 2) err(`agents/${f}: binds ${bound.length} skills (max 2)`);
+  for (const s of bound) if (!skillNames.has(s)) err(`agents/${f}: bound skill '${s}' does not exist`);
+  agentCount++;
 }
+console.log(`  -> ${agentCount} agents`);
+
+console.log('Commands:');
+const cmdDir = join(PLUGIN, 'commands');
+let cmdCount = 0;
+if (existsSync(cmdDir)) for (const f of readdirSync(cmdDir)) {
+  if (!f.endsWith('.md')) continue;
+  const fm = frontmatter(join(cmdDir, f));
+  if (!fm) { err(`commands/${f}: no frontmatter`); continue; }
+  if (!fm.description) err(`commands/${f}: missing description`);
+  cmdCount++;
+}
+console.log(`  -> ${cmdCount} commands`);
+
+console.log('Path refs (${CLAUDE_PLUGIN_ROOT}/...):');
+function walkMd(dir) {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) out.push(...walkMd(p));
+    else if (e.name.endsWith('.md')) out.push(p);
+  }
+  return out;
+}
+let refs = 0;
+for (const file of walkMd(PLUGIN)) {
+  const t = readFileSync(file, 'utf8');
+  const re = /\$\{CLAUDE_PLUGIN_ROOT\}\/([A-Za-z0-9._/-]+\.(?:md|mjs|json|js|html))/g;
+  let m;
+  while ((m = re.exec(t))) {
+    refs++;
+    if (!existsSync(join(PLUGIN, m[1]))) err(`${file.slice(PLUGIN.length + 1)}: dangling ref \${CLAUDE_PLUGIN_ROOT}/${m[1]}`);
+  }
+}
+console.log(`  -> ${refs} path refs checked`);
 
 console.log(`\n${errors ? '✗' : '✓'} ${errors} errors, ${warns} warnings`);
 process.exit(errors ? 1 : 0);
