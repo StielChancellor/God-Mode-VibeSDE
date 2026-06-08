@@ -39,7 +39,8 @@ const breakpoints = typeof args.breakpoints === 'string'
   ? args.breakpoints.split(',').map((n) => parseInt(n.trim(), 10)).filter(Boolean)
   : DEFAULT_BREAKPOINTS;
 const fullPage = String(args.full ?? 'true') !== 'false';
-const timeout = parseInt(args.timeout ?? '30000', 10);
+// Guard against bare flags (`--timeout` with no value parses to boolean `true` → NaN).
+const timeout = (typeof args.timeout === 'string' ? parseInt(args.timeout, 10) : NaN) || 30000;
 
 // Resolve Playwright from the project being tested (cwd), not from the plugin dir.
 let chromium;

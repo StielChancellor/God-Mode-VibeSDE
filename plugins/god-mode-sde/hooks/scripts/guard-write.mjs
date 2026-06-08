@@ -60,7 +60,21 @@ const sinks = [
 ];
 const warns = new Set();
 for (const [re, name] of sinks) if (re.test(text)) warns.add(name);
-if (warns.size)
-  advise('PreToolUse', `[GODMODE security advisory] Potential injection sink(s) in ${file || 'this change'}: ${[...warns].join(', ')}. Validate input & encode output at boundaries; use parameterized queries; avoid dynamic code execution (OWASP A03). Confirm this path is safe.`);
+
+// unquoted env-style credential assignment (KEY=value, e.g. .env files) — advisory only:
+// unquoted matching has a higher false-positive rate than the quoted block above (OWASP A02/A07).
+const envSecrets = new Set();
+const envGen = /(?:^|\n)\s*(?:export\s+)?([A-Za-z][A-Za-z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|CREDENTIAL|API[_-]?KEY)[A-Za-z0-9_]*)\s*=\s*([^\s"'`#]{16,})\s*(?:$|\r?\n|#)/gim;
+let em;
+while ((em = envGen.exec(text))) {
+  const v = em[2];
+  if (!placeholder(v) && /[A-Za-z]/.test(v) && /[0-9]/.test(v)) envSecrets.add(em[1]);
+}
+
+const notes = [];
+if (warns.size) notes.push(`Potential injection sink(s): ${[...warns].join(', ')}`);
+if (envSecrets.size) notes.push(`Possible unquoted secret(s) assigned to ${[...envSecrets].join(', ')} — move to a secret manager, don't commit`);
+if (notes.length)
+  advise('PreToolUse', `[GODMODE security advisory] ${file || 'this change'}: ${notes.join('. ')}. Validate input & encode output at boundaries; use parameterized queries; avoid dynamic code execution and hardcoded secrets (OWASP A02/A03/A07). Confirm this path is safe.`);
 
 process.exit(0);

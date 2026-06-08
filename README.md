@@ -2,7 +2,7 @@
 
 > A virtual enterprise engineering + product team for Claude Code. Install it, and a lead
 > orchestrator guides you through building (or improving) any platform end-to-end — with a
-> strict, gated SDLC, security/QA guardrails enforced at runtime, and OWASP + WCAG + OODA
+> strict, gated SDLC, best-effort security/QA guardrails at runtime, and OWASP + WCAG + OODA
 > baked in.
 
 This repository is a **Claude Code plugin marketplace** (`vibe-fde`) hosting one plugin:
@@ -45,9 +45,11 @@ This repository is a **Claude Code plugin marketplace** (`vibe-fde`) hosting one
 - **Battle-tested methodology skills** (adapted from superpowers): TDD, systematic debugging,
   planning, code review, parallel-agent dispatch, git worktrees, verification-before-completion.
 
-- **Runtime guardrails (hooks):** hard-block secrets-in-code, dangerous shell commands, and
-  injection sinks; advisory nudges for tests/lint/change-propagation. Cross-platform (Node.js).
-  Downgrade to advisory with `GODMODE_GUARDRAILS=advisory`.
+- **Runtime guardrails (hooks):** best-effort blocks for secrets-in-code and common dangerous
+  shell commands (POSIX **and** Windows/PowerShell), plus advisory flags for injection sinks and
+  unquoted secrets and nudges for tests/lint/change-propagation. These are heuristic speed bumps —
+  a safety net, **not** a security boundary, and they fail open. Node.js, no deps. Downgrade blocks
+  to warnings with `GODMODE_GUARDRAILS=advisory`.
 
 - **Compliance by default:** OWASP Top 10 + Secure Coding, WCAG 2.2 AA accessibility, OODA
   iteration, and cost-aware stack selection (always shows cheaper alternatives + tradeoffs).

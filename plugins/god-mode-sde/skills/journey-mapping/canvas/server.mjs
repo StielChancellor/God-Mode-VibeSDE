@@ -36,7 +36,19 @@ function saveState(obj) { writeFileSync(STATE_FILE, JSON.stringify(obj, null, 2)
 
 const HTML = join(HERE, 'index.html');
 
+// Reject any request that isn't same-origin localhost. The server binds to 127.0.0.1, but that
+// alone doesn't stop DNS-rebinding or a cross-site POST to /save (the saved JSON is later read
+// back into the agent's context, so a forged write is an indirect prompt-injection vector).
+const LOCAL = /^(?:localhost|127\.0\.0\.1|\[::1\]|::1)(?::\d+)?$/i;
+const LOCAL_ORIGIN = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
+function isLocal(req) {
+  if (!LOCAL.test(String(req.headers.host || ''))) return false;
+  const origin = req.headers.origin;
+  return !origin || LOCAL_ORIGIN.test(origin);
+}
+
 const server = createServer((req, res) => {
+  if (!isLocal(req)) { res.writeHead(403, { 'Content-Type': 'text/plain' }); return res.end('forbidden'); }
   const url = (req.url || '/').split('?')[0];
   if (req.method === 'GET' && (url === '/' || url === '/index.html')) {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

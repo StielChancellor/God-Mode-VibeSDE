@@ -1,5 +1,7 @@
 // PreToolUse(Bash): hard-block dangerous shell commands. OWASP/ops hygiene.
-import { readStdin, hardBlock } from './_lib.mjs';
+// NOTE: these are best-effort heuristics, not a security boundary — regex command
+// filtering is inherently bypassable (it widens common-case coverage and fails open).
+import { readStdin, hardBlock, advise } from './_lib.mjs';
 
 const inp = await readStdin();
 const cmd = String(inp?.tool_input?.command ?? '');
@@ -8,14 +10,34 @@ if (!cmd.trim()) process.exit(0);
 const findings = [];
 const add = (r) => findings.push(r);
 
-// rm -rf on dangerous targets (/, ~, $HOME, *) or --no-preserve-root
+// --- POSIX rm -rf on a root/home/critical/glob target, or --no-preserve-root ---
 const recursiveForce =
   /\brm\s+-[a-z]*r[a-z]*f[a-z]*\b/i.test(cmd) ||
   /\brm\s+-[a-z]*f[a-z]*r[a-z]*\b/i.test(cmd) ||
   (/\brm\b[^\n]*\s-[a-z]*r/i.test(cmd) && /\brm\b[^\n]*\s-[a-z]*f/i.test(cmd));
-const dangerTarget = /(?:^|\s)(?:\/(?:\s|$)|~(?:\/|\s|$)|\$HOME\b|\*(?:\s|$)|\/\*)/.test(cmd);
+// Critical absolute paths (allowlist-of-danger — keeps project-relative deletes like
+// `rm -rf node_modules`/`dist` allowed on purpose).
+const CRITICAL = /(?:^|[\s"'(=])(?:\/(?:etc|usr|var|bin|sbin|lib|lib64|boot|opt|sys|proc|dev|root|home|Users|System|Library|Applications)(?:\/|\b))/;
+const dangerTarget =
+  /(?:^|\s)(?:\/(?:\s|$)|~(?:\/|\s|$)|\$HOME\b|\$\{HOME\}|\*(?:\s|$)|\/\*)/.test(cmd) ||  // bare /, ~, $HOME, *, /*
+  /(?:^|\s)["']\/["']/.test(cmd) ||                                                       // quoted root "/" '/'
+  CRITICAL.test(cmd);
 if (/--no-preserve-root/.test(cmd) || (recursiveForce && dangerTarget))
-  add('Destructive recursive force-delete (rm -rf) on a root/home/glob target');
+  add('Destructive recursive force-delete (rm -rf) on a root/home/critical/glob target');
+
+// find-based mass delete on a root/critical path
+if ((/\bfind\b[^\n]*\s-delete\b/.test(cmd) || /\bfind\b[^\n]*-exec\s+rm\b/i.test(cmd)) && dangerTarget)
+  add('Recursive find -delete / find -exec rm on a root/critical path');
+
+// --- Windows / PowerShell destructive deletes (host may be win32) ---
+const winTarget = /(?:[A-Za-z]:\\(?:\*|\s|$|["'`])|[A-Za-z]:\\(?:Windows|System32|Users|Program Files)\b|%SystemRoot%|%USERPROFILE%|%SystemDrive%|\$env:(?:SystemRoot|SystemDrive|USERPROFILE|HOMEPATH)|\$HOME\b|(?:^|\s)~(?:\\|\/|\s|$))/i;
+const winRemove = /\b(?:Remove-Item|ri|rmdir|rd|del|erase)\b/i;
+const winRecurse = /(?:-Recurse\b|\s-r\b|\/s\b)/i;
+const winForce = /(?:-Force\b|\s-fo?\b|\/q\b|\/f\b)/i;
+if (winRemove.test(cmd) && winRecurse.test(cmd) && winForce.test(cmd) && winTarget.test(cmd))
+  add('Destructive recursive delete on a Windows drive root/home (Remove-Item -Recurse -Force / rd /s /q / del /f /s /q)');
+if (/\bformat\b\s+[A-Za-z]:/i.test(cmd) || /\bFormat-Volume\b/i.test(cmd) || /\bClear-Disk\b/i.test(cmd) || /\bcipher\b[^\n]*\/w\b/i.test(cmd))
+  add('Windows disk/volume format or secure-wipe (format / Format-Volume / Clear-Disk / cipher /w)');
 
 // disk wipe / raw device write
 if (/\bmkfs(?:\.\w+)?\b/.test(cmd) || /\bdd\b[^\n]*\bof=\/dev\/(?:sd|nvme|disk|hd|mmcblk)/.test(cmd))
@@ -25,12 +47,14 @@ if (/\bmkfs(?:\.\w+)?\b/.test(cmd) || /\bdd\b[^\n]*\bof=\/dev\/(?:sd|nvme|disk|h
 if (/:\s*\(\s*\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;?\s*:/.test(cmd) || /\(\)\s*\{\s*:\|:&\s*\}/.test(cmd))
   add('Fork bomb');
 
-// remote code execution: pipe download to a shell / interpreter
-if (/(?:curl|wget)\b[^\n|]*\|\s*(?:sudo\s+)?(?:ba|z|d|k|a)?sh\b/i.test(cmd))
-  add('Piping a remote download straight into a shell (curl|bash)');
-if (/\b(?:iwr|irm|curl|invoke-webrequest|invoke-restmethod)\b[^\n|]*\|\s*(?:iex|invoke-expression)\b/i.test(cmd))
-  add('Piping a remote download into Invoke-Expression (iwr|iex)');
-if (/\bbase64\s+(?:-d|--decode|-D)\b[^\n|]*\|\s*(?:ba)?sh\b/i.test(cmd))
+// remote code execution: pipe download to a shell / interpreter.
+// `[^\n]*` (not `[^\n|]*`) tolerates intermediate stages, e.g. `curl x | cat | bash`.
+if (/(?:curl|wget|fetch|aria2c)\b[^\n]*\|\s*(?:sudo\s+)?(?:ba|z|d|k|a|c|fi|tc)?sh\b/i.test(cmd))
+  add('Piping a remote download into a shell (curl|bash)');
+if (/\b(?:iwr|irm|curl|wget|invoke-webrequest|invoke-restmethod|start-bitstransfer)\b[^\n]*\|\s*(?:iex|invoke-expression)\b/i.test(cmd) ||
+    /\b(?:iwr|irm|invoke-webrequest|invoke-restmethod)\b[^\n]*;\s*(?:iex|invoke-expression|&)\b/i.test(cmd))
+  add('Downloading and executing via PowerShell (iwr|iex / Invoke-Expression)');
+if (/\bbase64\s+(?:-d|--decode|-D)\b[^\n]*\|\s*(?:ba|z|d|k|a|c|fi|tc)?sh\b/i.test(cmd))
   add('Decoding base64 and piping into a shell');
 
 // world-writable perms
@@ -51,11 +75,16 @@ if (/NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*0/.test(cmd) ||
 
 // secret exfiltration: reads sensitive credential file AND has network egress
 const sensitive = /(?:~\/\.ssh\/|\/\.ssh\/id_|\.aws\/credentials|(?:^|\s|\/)\.env\b|\.netrc\b|\bid_rsa\b|\.kube\/config|\.npmrc\b)/;
-const egress = /\b(?:curl|wget|nc|ncat|netcat|scp|sftp|ftp|telnet|Invoke-WebRequest|Invoke-RestMethod)\b/i;
+const egress = /\b(?:curl|wget|nc|ncat|netcat|scp|sftp|ftp|telnet|aria2c|fetch|Invoke-WebRequest|Invoke-RestMethod|Start-BitsTransfer|iwr|irm)\b/i;
 if (sensitive.test(cmd) && egress.test(cmd))
   add('Possible secret exfiltration (reads credentials AND sends them over the network)');
 
 if (findings.length)
   hardBlock('PreToolUse', `God-Mode SDE blocked a dangerous shell command:\n- ${findings.join('\n- ')}\n\nIf this is genuinely required, run it yourself, or set GODMODE_GUARDRAILS=advisory to downgrade blocks to warnings.`);
+
+// Advisory (non-blocking): recursive force-delete whose target is a shell variable we can't
+// resolve statically — could expand to / or $HOME. Too noisy to hard-block.
+if (recursiveForce && /\brm\b[^\n]*\s["']?\$\{?\w+\}?/.test(cmd) && !/\$\{?HOME\}?\b/.test(cmd))
+  advise('PreToolUse', '[GODMODE advisory] `rm -rf` targets a shell variable — confirm it cannot expand to `/`, `~`, or a critical path before running.');
 
 process.exit(0);
