@@ -19,7 +19,11 @@ god-mode-sde/
 ## How it works
 The `sde-orchestrator` skill triggers when you ask to build/improve a platform. It runs a
 strict, gated SDLC, delegating to the specialist subagents and applying the methodology
-skills, while the hooks enforce security/QA guardrails regardless of model decisions.
+skills, while the hooks apply best-effort security/QA guardrails (heuristic, fail-open — a
+safety net, not a security boundary).
 
-Guardrail mode: hard-block by default; set `GODMODE_GUARDRAILS=advisory` to downgrade blocks
-to warnings.
+Guardrail mode: best-effort blocking by default (these are bypassable regex heuristics, not a
+security boundary — they fail open); set `GODMODE_GUARDRAILS=advisory` to downgrade blocks to
+warnings. The dangerous-delete guard intentionally ALLOWS deletes of build/dependency dirs
+(node_modules, dist, build, .cache, target, …) — even by absolute path — while still blocking
+home-root, system, drive-root, and bare-root targets.

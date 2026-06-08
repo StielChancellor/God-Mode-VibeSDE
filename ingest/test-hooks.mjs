@@ -23,6 +23,11 @@ check('blocks rm -rf quoted root', run('guard-bash.mjs', { tool_input: { command
 check('blocks find / -delete', run('guard-bash.mjs', { tool_input: { command: 'find / -name "*.tmp" -delete' } }).status === 2);
 check('allows rm -rf node_modules', run('guard-bash.mjs', { tool_input: { command: 'rm -rf node_modules' } }).status === 0);
 check('allows rm -rf dist build', run('guard-bash.mjs', { tool_input: { command: 'rm -rf dist build .cache' } }).status === 0);
+check('allows abs node_modules under C:\\Users', run('guard-bash.mjs', { tool_input: { command: 'Remove-Item -Recurse -Force C:\\Users\\me\\proj\\node_modules' } }).status === 0);
+check('allows abs node_modules under /home', run('guard-bash.mjs', { tool_input: { command: 'rm -rf /home/me/app/node_modules' } }).status === 0);
+check('still blocks C:\\Users home dir', run('guard-bash.mjs', { tool_input: { command: 'Remove-Item -Recurse -Force C:\\Users\\me' } }).status === 2);
+check('still blocks /home home dir', run('guard-bash.mjs', { tool_input: { command: 'rm -rf /home/me' } }).status === 2);
+check('still blocks build-name under /etc', run('guard-bash.mjs', { tool_input: { command: 'rm -rf /etc/node_modules' } }).status === 2);
 check('blocks Remove-Item C:\\', run('guard-bash.mjs', { tool_input: { command: 'Remove-Item -Recurse -Force C:\\' } }).status === 2);
 check('blocks del /f /s /q C:', run('guard-bash.mjs', { tool_input: { command: 'del /f /s /q C:\\*' } }).status === 2);
 check('blocks format C:', run('guard-bash.mjs', { tool_input: { command: 'format C:' } }).status === 2);

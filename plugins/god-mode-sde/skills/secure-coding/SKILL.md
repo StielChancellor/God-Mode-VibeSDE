@@ -79,7 +79,9 @@ Treat 2021 as the stable reference and 2025 RC1 as forward-guidance. Encode thes
 
 ## Secrets — absolute rules
 - No secrets in code, commits, logs, error messages, or client bundles. Env vars / secret
-  manager only. The `guard-write` hook hard-blocks known secret patterns; do not work around it.
+  manager only. The `guard-write` hook blocks known secret patterns by default (a best-effort,
+  fail-open heuristic — not a security boundary); treat a block as a prompt to fix the secret,
+  not an obstacle to route around.
 
 ## How to run a security pass
 1. Map trust boundaries and data flows; identify where untrusted input enters.

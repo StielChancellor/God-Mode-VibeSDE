@@ -22,11 +22,27 @@ const dangerTarget =
   /(?:^|\s)(?:\/(?:\s|$)|~(?:\/|\s|$)|\$HOME\b|\$\{HOME\}|\*(?:\s|$)|\/\*)/.test(cmd) ||  // bare /, ~, $HOME, *, /*
   /(?:^|\s)["']\/["']/.test(cmd) ||                                                       // quoted root "/" '/'
   CRITICAL.test(cmd);
-if (/--no-preserve-root/.test(cmd) || (recursiveForce && dangerTarget))
+// Ephemeral build/dependency dirs are safe to delete even under a home path (common false positive).
+const BUILD_DIR = /\b(?:node_modules|dist|build|out|coverage|\.cache|\.next|\.nuxt|\.turbo|\.svelte-kit|\.parcel-cache|__pycache__|\.pytest_cache|\.gradle|\.venv|target)(?:[\/\\"'`\s]|$)/i;
+// Targets that NEVER get the build-dir pass: bare/quoted root, ~/$HOME/glob, system dirs, a home-USER
+// dir itself (not a deeper path under it — blocks `rm -rf /home/me` and the `... /home/me node_modules`
+// bypass), or a Windows drive/system root.
+const HARD_DANGER =
+  /--no-preserve-root/.test(cmd) ||
+  /(?:^|\s)(?:\/(?:\s|$)|~(?:\/|\s|$)|\$\{?HOME\}?\b|\*(?:\s|$)|\/\*)/.test(cmd) ||
+  /(?:^|\s)["']\/["']/.test(cmd) ||
+  /(?:^|[\s"'(=])\/(?:etc|usr|var|bin|sbin|lib|lib64|boot|opt|sys|proc|dev|root|System|Library|Applications)(?:\/|\b)/.test(cmd) ||
+  /(?:^|\s)\/(?:home|Users)\/[^\/\s]+(?:\s|$)/.test(cmd) ||
+  /(?:^|\s)[A-Za-z]:\\Users\\[^\\\s]+(?:\\?\s|\\?$)/i.test(cmd) ||
+  /[A-Za-z]:\\(?:Windows|System32|Program Files)\b/i.test(cmd) ||
+  /[A-Za-z]:\\(?:\*|\s|$|["'`])/.test(cmd);
+const buildDirException = BUILD_DIR.test(cmd) && !HARD_DANGER;
+
+if (/--no-preserve-root/.test(cmd) || (recursiveForce && dangerTarget && !buildDirException))
   add('Destructive recursive force-delete (rm -rf) on a root/home/critical/glob target');
 
 // find-based mass delete on a root/critical path
-if ((/\bfind\b[^\n]*\s-delete\b/.test(cmd) || /\bfind\b[^\n]*-exec\s+rm\b/i.test(cmd)) && dangerTarget)
+if ((/\bfind\b[^\n]*\s-delete\b/.test(cmd) || /\bfind\b[^\n]*-exec\s+rm\b/i.test(cmd)) && dangerTarget && !buildDirException)
   add('Recursive find -delete / find -exec rm on a root/critical path');
 
 // --- Windows / PowerShell destructive deletes (host may be win32) ---
@@ -34,7 +50,7 @@ const winTarget = /(?:[A-Za-z]:\\(?:\*|\s|$|["'`])|[A-Za-z]:\\(?:Windows|System3
 const winRemove = /\b(?:Remove-Item|ri|rmdir|rd|del|erase)\b/i;
 const winRecurse = /(?:-Recurse\b|\s-r\b|\/s\b)/i;
 const winForce = /(?:-Force\b|\s-fo?\b|\/q\b|\/f\b)/i;
-if (winRemove.test(cmd) && winRecurse.test(cmd) && winForce.test(cmd) && winTarget.test(cmd))
+if (winRemove.test(cmd) && winRecurse.test(cmd) && winForce.test(cmd) && winTarget.test(cmd) && !buildDirException)
   add('Destructive recursive delete on a Windows drive root/home (Remove-Item -Recurse -Force / rd /s /q / del /f /s /q)');
 if (/\bformat\b\s+[A-Za-z]:/i.test(cmd) || /\bFormat-Volume\b/i.test(cmd) || /\bClear-Disk\b/i.test(cmd) || /\bcipher\b[^\n]*\/w\b/i.test(cmd))
   add('Windows disk/volume format or secure-wipe (format / Format-Volume / Clear-Disk / cipher /w)');
