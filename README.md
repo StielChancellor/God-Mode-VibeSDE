@@ -36,10 +36,18 @@ claude plugin marketplace add StielChancellor/God-Mode-VibeSDE
 claude plugin install god-mode-sde@vibe-fde
 ```
 
-**💻 Claude Desktop app (Cowork / agent mode)** — ❗`/plugin` is **NOT** available in the desktop chat
-(you'll see *"isn't available in this environment"*). Install from a **terminal** with the same two
-`claude plugin …` commands as JetBrains above. Once installed it **loads automatically** in your next
-Desktop session. If the `claude` command isn't found, install it once: `npm i -g @anthropic-ai/claude-code`.
+**💻 Claude Desktop app (Cowork / agent mode)** — `/plugin` isn't available in the desktop chat
+(you'll see *"isn't available in this environment"*). ✨ **Easiest — one line.** Run this in **PowerShell**,
+*or* paste it into the Desktop chat and say *"run this"* (Cowork will execute it for you):
+
+```powershell
+irm https://raw.githubusercontent.com/StielChancellor/God-Mode-VibeSDE/main/install.ps1 | iex
+```
+
+That script finds your Claude CLI (installs it via `npm` if missing), adds the marketplace, installs the
+plugin, and leaves it **off by default** (token-safe). Then **restart Desktop** and turn it on per project:
+`claude plugin enable god-mode-sde@vibe-fde --scope project`. Prefer manual? Use the two `claude plugin …`
+commands from the JetBrains section above.
 
 **🌐 claude.ai (web chat)** — Claude Code plugins **don't apply** to the website. Use a terminal, an
 IDE, or the Desktop app instead.
