@@ -11,6 +11,34 @@ accessibility (WCAG) are baked in, so you don't have to know about them to get t
 
 ---
 
+## ⚡ Quick start — copy, paste, run in Claude Code
+
+**1. Install** (paste both lines into Claude Code, then start a fresh session):
+
+```text
+/plugin marketplace add StielChancellor/God-Mode-VibeSDE
+/plugin install god-mode-sde@vibe-fde
+```
+
+**2. Update** to the latest version (restart the session after):
+
+```text
+/plugin update god-mode-sde@vibe-fde
+```
+
+**3. Uninstall** (removes the plugin; your projects are untouched):
+
+```text
+/plugin uninstall god-mode-sde@vibe-fde
+```
+
+> ⚠️ Always install with the two commands above — **don't copy the plugin files by hand**, it breaks
+> the plugin. After install/update, **start a new Claude Code session** for it to take effect.
+
+Once installed, jump to the **[📖 Manual](#-manual--how-to-use-it)** below, or just type `/kickoff`.
+
+---
+
 ## The problem this solves (if you've vibe-coded, you've felt this)
 
 You can get a slick prototype in an afternoon. Then reality hits:
@@ -121,22 +149,76 @@ stack — so the system never drifts out of sync.
 
 ---
 
-## Install & use (Claude Code)
+## 📖 Manual — how to use it
 
-```
-/plugin marketplace add StielChancellor/God-Mode-VibeSDE
-/plugin install god-mode-sde@vibe-fde
-```
+### Step 0 · Install (one time)
+Run the two install lines from **[⚡ Quick start](#-quick-start--copy-paste-run-in-claude-code)** above,
+then **start a fresh Claude Code session** so the agents, commands, and guardrails load.
 
-⚠️ That's the whole install. Don't copy the plugin files by hand — it breaks the plugin. Always use
-the two commands above, then start a fresh session.
+### The two ways to drive it
 
-Then just describe what you want to build, or jump in with a command:
+**A. Just talk to it (easiest).** Open Claude Code in your project folder and say what you want:
 
-`/kickoff` (start here) · `/triage` · `/prd` · `/journey` · `/stack-and-cost` · `/module-map` ·
-`/design-review` · `/build-plan` · `/build` · `/feature-check` · `/ux-check` · `/polish` ·
-`/ship-check` · `/compliance-check` · `/perf-check` · `/docs-check` · `/release` ·
-`/launch-readiness` · `/change-request` · `/raid` · `/incident` · `/ingest-scan` · `/graph`
+> *"Build me a web app where small gyms can manage memberships and take payments."*
+
+The lead coordinator (`sde-orchestrator`) wakes up and walks you through the whole pipeline,
+stopping at each ◆ gate for your approval. You don't need to remember any commands.
+
+**B. Drive it with commands.** Prefer to steer each stage yourself? Use the slash commands below.
+`/kickoff` is the front door for a brand-new build.
+
+### The journey, start to finish
+
+Each step is a command **and** a checkpoint. The team does the work; **you approve before it moves on.**
+
+| # | You run | What happens | You approve |
+|---|---------|--------------|-------------|
+| 0 | `/kickoff` | Dump your idea; the team captures the goal. No code yet. | the objective |
+| — | `/triage` | Right-sizes the process — a tiny change skips the heavy gates; a risky one gets the full pipeline. | the lane |
+| 1 | `/prd` | Co-writes a Product Requirements Doc — what you're building and why. | the PRD ◆ |
+| 2 | `/journey` | Maps every screen + the flow behind them (diagram or interactive canvas). | the journey ◆ |
+| 3 | `/stack-and-cost` | Picks the tech stack **with real cost** + a cheaper alternative and trade-offs. | the cost ◆ |
+| 4 | `/module-map` | Breaks the system into modules with clear contracts between them. | the decomposition ◆ |
+| — | `/design-review` | Architects + security review the blueprint **before** any code. | the design ◆ |
+| 5 | `/build-plan` | A foundation-first build plan with test plans. **Hard gate before coding.** | the plan ◆ |
+| 6 | `/build` | The engineering swarm builds it — foundation first, then features, test-driven. | — |
+| 7 | `/feature-check` | Each feature attacked by 4 QA lenses in parallel; nothing closes until all pass. | per feature ◆ |
+| — | `/ux-check` · `/polish` | Renders the UI across all screen sizes; kills the "AI-slop" look. | the UI ◆ |
+| 8 | `/ship-check` | Fresh best-practices QA pass + UAT + smoke tests. | ready-to-ship ◆ |
+| — | `/compliance-check` · `/perf-check` · `/docs-check` | Pre-ship gates: compliance, performance/scale, docs-ready. | each gate ◆ |
+| 9 | `/release` · `/launch-readiness` | Versioning, release notes, launch checklist, staged/canary rollout. | the go/no-go ◆ |
+| 10 | `/incident` | If production breaks: declare an incident, mitigate first, then a blameless postmortem. | — |
+
+### Changing something later
+
+Never edit code blindly. Run **`/change-request`** and describe the change — it re-enters at the PRD
+and flows cleanly through the whole stack (PRD → design → plan → code → docs) so nothing is left
+half-wired. `/raid` tracks risks and dependencies across a bigger program; `/graph` refreshes the
+codebase map for accurate "what does this change affect" analysis; `/ingest-scan` security-scans any
+outside skill/repo before you trust it.
+
+### Talking to one specialist
+
+You always talk to the coordinator, but you can ask to hear any specialist directly — e.g.
+*"let me hear the security-architect on this"* or *"what does the tech-lead think about the cost?"*
+It's a front door, not a wall.
+
+### Tips
+- **You're always in control.** The team never ships past a ◆ gate without your yes.
+- **It won't jump to code.** If you ask it to "just build it", it'll still plan first — that's the point.
+- **Cost is always on the table.** Every expensive choice comes with a cheaper option and what you'd lose.
+- **Security & accessibility are automatic.** You get OWASP + WCAG 2.2 AA without having to ask.
+
+### Every command at a glance
+`/kickoff` · `/triage` · `/prd` · `/journey` · `/stack-and-cost` · `/module-map` · `/design-review` ·
+`/build-plan` · `/build` · `/feature-check` · `/ux-check` · `/polish` · `/ship-check` ·
+`/compliance-check` · `/perf-check` · `/docs-check` · `/release` · `/launch-readiness` ·
+`/change-request` · `/raid` · `/incident` · `/ingest-scan` · `/graph`
+
+### Troubleshooting
+- **Commands don't appear / guardrails not active?** Start a **new session** — plugins load at startup.
+- **`Status: ✘ failed to load` or stale behavior?** Run `/plugin update god-mode-sde@vibe-fde` and restart.
+- **Check it's loaded:** in a terminal, `claude plugin list` should show `god-mode-sde@vibe-fde  ✔ enabled`.
 
 ---
 
