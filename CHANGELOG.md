@@ -3,6 +3,13 @@
 All notable changes to the `vibegod-tech-team` plugin are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.2] — Journey canvas: light theme
+### Changed
+- Switched the journey canvas to a **light theme** (was dark): light page/surfaces, dark navy ink,
+  re-tuned lane bands, node cards, chips (white text on accent), edges, toasts, overlays, and `kbd` for
+  light-mode contrast. Layout, interactions (pan/zoom/drag/connect), readability model, and schema unchanged.
+- Verified: validate 0/0 (canvas guard), jsdom 0 runtime errors, no residual dark colors. Bump 0.7.1 → 0.7.2.
+
 ## [0.7.1] — Journey canvas: fluid interactions restored
 ### Changed (from field feedback — v0.7.0 felt less fluid than the old server canvas)
 - Re-added the **pan/zoom "infinite canvas"** layer the readability rebuild had dropped, kept fully
