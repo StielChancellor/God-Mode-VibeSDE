@@ -27,6 +27,13 @@ this plugin's `skills/design-refinement/SKILL.md`. NONE of Impeccable's scripts/
 included. Impeccable itself derives from **Anthropic's `frontend-design` skill (Apache-2.0,
 (c) 2025 Anthropic PBC)** and **ehmo/typecraft-guide-skill** — both are credited here per its NOTICE.
 
+## gstack — https://github.com/garrytan/gstack
+**MIT License, Copyright (c) 2026 Garry Tan.** The **idea** of codifying a proven flow so an agent
+replays it instead of re-deriving it (gstack's "skillify") inspired this plugin's `recipes` skill +
+`/recipe` command (Tier-1 markdown checklists). This is a **clean-room re-implementation of the
+concept** — **no gstack code, scripts, or binaries were copied**; VibeGod's recipes are prose-only and
+deliberately omit gstack's executable/daemon tiers. Credited here as inspiration.
+
 ---
 If you are a maintainer of any of the above and want attribution adjusted, please open an
 issue on this repository.
