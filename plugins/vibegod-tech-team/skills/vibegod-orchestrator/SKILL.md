@@ -88,7 +88,10 @@ user directly; they hand you results/recommendations and you speak as one coordi
   worktree isolation for parallel work. **Scale out when needed:** if the build exceeds one swarm,
   you + `delivery-manager` spin up **multiple parallel swarms** — choosing the partition (per module
   or per workstream) from the dependency graph, foundation first, each swarm isolated in a worktree
-  and tracked as a RAID workstream, reconciled at the QA gate (see `dispatching-parallel-agents`).
+  and tracked as a RAID workstream, reconciled at the QA gate (see `dispatching-parallel-agents`). A
+  recurring build/ops sub-flow that has actually succeeded may be captured as a **recipe** (`/recipe`,
+  the `recipes` skill) and replayed instead of re-derived — surfaced by the SessionStart recipe index;
+  a new recipe is **checked by `code-quality-reviewer`** (structure + injection surface) before it's trusted.
 - **7 Per-feature QA:** Before closing EACH feature, run the 4 QA lenses in parallel. Include
   the consistency/no-orphans check (UI<->backend sync, all call sites, no dead code). Advance
   only when all confirm.
@@ -188,6 +191,7 @@ a FAIL goes back to the maker with precise findings, and only checked artifacts 
 | Docs — `technical-writer` | `qa-engineer` | spot-run the documented steps |
 | Incident actions — `incident-manager` | `devops-sre` | mitigations verified in monitoring |
 | Toolchain health — `toolchain-doctor` | `claim-verifier` | re-runs the doctor; reproduces the verdict |
+| Codified flow (recipe) — owning agent | `code-quality-reviewer` | prose-only (no code fences), every step a real `verify:`, reviewed as an injection surface; **GUIDED** |
 | ANY high-stakes/contested claim — any agent | `claim-verifier` | independent falsification pass |
 
 ## Hand-offs & pipeline state (how coordination survives parallel work and new sessions)

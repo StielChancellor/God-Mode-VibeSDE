@@ -3,6 +3,45 @@
 All notable changes to the `vibegod-tech-team` plugin are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] — Recipes (Tier-1 codified flows) — replay a proven flow, don't re-derive it
+### Added
+- **`recipes` skill + `/recipe` command** — capture a *proven, recurring* flow as a committed markdown
+  **checklist** (`<project>/.vibegod/recipes/<slug>.md`) the agent **replays instead of re-deriving**.
+  Recipes are **prose** referencing existing commands — they never embed an AI-authored script. Adapted
+  clean-room from gstack's "skillify" idea (MIT; no code copied — see ATTRIBUTION). Replaying is
+  **GUIDED**; the lint + the index bounds are **MECHANICAL**.
+- **`recipe-lint.mjs`** (zero-dep, the local injection-scan for recipes, which bypass `/ingest-scan`):
+  hard-fails on fenced code blocks (the mechanical enforcement of "prose only"), a step missing a real
+  `verify:`, a vacuous `verify:`, a missing `## Fallback`, an unknown `owner`, a future `last-verified`,
+  or prompt-injection markers in `name`/`trigger`. The shipped example (`examples/no-orphans-sweep.md`)
+  is lint-gated in CI (test-hooks), so the gate can't rot.
+- **SessionStart recipe index** — when `.vibegod/recipes/` exists, the hook surfaces each recipe's
+  `name`+`trigger` so the agent reaches for one. Hardened per the design-panel's HIGH finding: injects
+  **only** name+trigger, **sanitized** (control/zero-width/bidi/newline/backtick/angle-bracket stripped)
+  + truncated, **bounded** (≤12, frontmatter-only, non-symlink children, realpath-inside-project),
+  framed as **UNTRUSTED data — not instructions**, and **DRAFT** (`proven-runs: 0`) recipes are excluded
+  from the trusted index. Fail-open.
+- **No `/recipe run`** — replay is the agent *reading and following* the prose (honoring each `verify:`);
+  a runner would pressure batching past the checks.
+### Gate / process
+- Took the proper Stage-9 change-request path: a 4-lens design-hardening panel (architect, security,
+  simplicity, adversarial) reviewed the spec FIRST — all four independently flagged the SessionStart
+  injection vector, which is now closed before any code shipped. Maker–checker row added (recipe owner →
+  `code-quality-reviewer`, GUIDED); orchestrator Stage-6 + delegation updated. The executable **capsule**
+  tier stays **shelved** behind a 3-part evidence gate (real computation + ≥10 runs + human-confirmed
+  contract test).
+### Hardened by the QA-gate panel (5 lenses re-reviewed the build adversarially)
+- The panel found the SessionStart injection filter could be split by **zero-width characters** and
+  **Cyrillic homoglyphs**, and that the lint↔index marker lists had **diverged**. Closed with a single
+  shared **de-obfuscating** detector — `hooks/scripts/_markers.mjs` (strip zero-width/bidi → fold homoglyphs
+  → squash to letters → match injection-phrase stems) — imported by BOTH the index and `recipe-lint`, so
+  they can never drift. Also: tilde (`~~~`) fence detection, a sub-bullet-only Steps lint fix
+  (filter-before-trim), and strict integer `proven-runs` in the index.
+- Honest limit (relabeled to match reality): the markers are **best-effort heuristics, not proof** — the
+  safe-charset sanitization + UNTRUSTED framing + human `code-quality-reviewer` review are the real boundary.
+- `ingest/test-hooks.mjs` +24 cases (now **80**), incl. regression tests for every gap above. Counts: 52
+  skills · 25 commands. Bump 0.10.0 → 0.11.0.
+
 ## [0.10.0] — /doctor + maker–checker + pipeline state + ERD + update nudge
 ### Added
 - **`/doctor` + `toolchain-health` skill + `toolchain-doctor` agent (28th specialist).** One bundled,

@@ -5,7 +5,7 @@
 > design, build, test, and ship your idea as a real, production-grade platform.
 > **You approve. The team does the work.**
 >
-> 28 specialists · 11 departments · 51 skills · 24 commands · **1 coordinator** you talk to.
+> 28 specialists · 11 departments · 52 skills · 25 commands · **1 coordinator** you talk to.
 
 ---
 
@@ -202,7 +202,7 @@ claude plugin enable  vibegod-tech-team@vibegod --scope project   # ON for just 
 `/kickoff` · `/triage` · `/prd` · `/journey` · `/stack-and-cost` · `/module-map` · `/design-review` ·
 `/build-plan` · `/build` · `/feature-check` · `/ux-check` · `/polish` · `/ship-check` ·
 `/compliance-check` · `/perf-check` · `/docs-check` · `/release` · `/launch-readiness` ·
-`/change-request` · `/raid` · `/incident` · `/ingest-scan` · `/graph` · `/doctor`
+`/change-request` · `/raid` · `/incident` · `/ingest-scan` · `/graph` · `/doctor` · `/recipe`
 
 ## 🙏 Credits & acknowledgements
 
